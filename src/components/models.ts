@@ -1,8 +1,13 @@
-export interface Todo {
+export interface Player {
   id: number;
-  content: string;
+  name: string;
+  stats: Date[]
+
 }
 
-export interface Meta {
-  totalCount: number;
+export interface Game {
+  id: number;
+  name: string;
+  description: string;
+  players: Player[];
 }

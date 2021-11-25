@@ -1,0 +1,102 @@
+<template>
+    <q-dialog v-model="prompt" ref="dialogRef" @hide="onDialogHide">
+      <q-card class="q-dialog-plugin">
+        <q-card-section>
+          <div class="text-h6">{{ title }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input
+            label="Name"
+            lazy-rules
+            :rules="[val => val && val.length > 0 || 'Please type something']"
+            v-model="game.name"
+            autofocus
+          />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input
+            label="Description"
+            v-model="game.description"
+            dense
+          />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-input v-model="player"
+            label="Player Name"
+            lazy-rules
+            :rules="[val => (!foundPlayer(val)) || 'This player already exist']"
+          >
+            <template v-slot:append>
+              <q-btn round dense flat icon="add" @click="addPlayer(player)" />
+            </template>
+          </q-input>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none q-gutter-xs">
+          <template v-for="{name, id} in game.players" :key="id">
+            <q-chip size="md" removable :label="name" @remove="delPlayer(name)" color="secondary" text-color="white" />
+          </template>
+        </q-card-section>
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn flat label="Submit" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
+import { useDialogPluginComponent } from 'quasar'
+import { Game, Player } from './models'
+
+export default defineComponent({
+  name: 'NewGameDialog',
+  emits: [
+    ...useDialogPluginComponent.emits
+  ],
+  setup() {
+    const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+    const title = 'Create a new game'
+    const player = ref('')
+    const game = ref(<Game>{players: <Player[]>[]})
+
+    function foundPlayer(name: string): boolean {
+      return game.value.players.some((x) => x.name === name)
+    }
+    function addPlayer(name: string) {
+      if(!foundPlayer(name)) {
+        game.value.players.push(<Player>{name: name})
+      }
+    }
+    function delPlayer(name: string) {
+      game.value.players = game.value.players.filter((x) => x.name !== name)
+    }
+
+    return {
+      title,
+      game,
+      player,
+      dialogRef,
+      onDialogHide,
+      addPlayer,
+      delPlayer,
+      foundPlayer,
+
+      nameRules: [
+      ],
+
+      onOKClick () {
+        onDialogOK()
+      },
+
+      prompt: ref(false),
+      onCancelClick: onDialogCancel
+    }
+  }
+});
+</script>

@@ -5,9 +5,7 @@ import {
   Store as VuexStore,
   useStore as vuexUseStore,
 } from 'vuex'
-
-// import example from './module-example'
-// import { ExampleStateInterface } from './module-example/state';
+import { GameStateInterface } from './game/state'
 
 /*
  * If not building with SSR mode, you can
@@ -19,10 +17,7 @@ import {
  */
 
 export interface StateInterface {
-  // Define your own store structure, using submodules if needed
-  // example: ExampleStateInterface;
-  // Declared as unknown to avoid linting issue. Best to strongly type as per the line above.
-  example: unknown
+  game: GameStateInterface
 }
 
 // provide typings for `this.$store`
