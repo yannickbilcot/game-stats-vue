@@ -1,5 +1,5 @@
 <template>
-    <q-dialog v-model="prompt" ref="dialogRef" @hide="onDialogHide">
+    <q-dialog ref="dialogRef" @hide="onDialogHide">
       <q-card class="q-dialog-plugin">
         <q-card-section>
           <div class="text-h6">{{ title }}</div>
@@ -24,15 +24,16 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
+          <form>
           <q-input v-model="player"
             label="Player Name"
-            lazy-rules
             :rules="[val => (!foundPlayer(val)) || 'This player already exist']"
           >
             <template v-slot:append>
-              <q-btn round dense flat icon="add" @click="addPlayer(player)" />
+              <q-btn type="submit" round dense flat icon="add" @click="addPlayer(player)" />
             </template>
           </q-input>
+          </form>
         </q-card-section>
 
         <q-card-section class="q-pt-none q-gutter-xs">
@@ -43,7 +44,7 @@
 
         <q-card-actions align="right" class="text-primary">
           <q-btn flat label="Cancel" v-close-popup />
-          <q-btn flat label="Submit" v-close-popup />
+          <q-btn type="submit" flat label="Submit" @click="onOKClick"/>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -51,8 +52,11 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
+import { api } from 'boot/axios'
 import { useDialogPluginComponent } from 'quasar'
 import { Game, Player } from './models'
+import { useQuasar } from 'quasar'
+import { AxiosError } from 'axios';
 
 export default defineComponent({
   name: 'NewGameDialog',
@@ -61,20 +65,35 @@ export default defineComponent({
   ],
   setup() {
     const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+    const $q = useQuasar()
     const title = 'Create a new game'
     const player = ref('')
-    const game = ref(<Game>{players: <Player[]>[]})
+    const game = ref(<Game>{name: '', players: <Player[]>[]})
 
     function foundPlayer(name: string): boolean {
       return game.value.players.some((x) => x.name === name)
     }
     function addPlayer(name: string) {
-      if(!foundPlayer(name)) {
+      if(!foundPlayer(name) && name !== '') {
         game.value.players.push(<Player>{name: name})
+        player.value = ''
       }
     }
     function delPlayer(name: string) {
       game.value.players = game.value.players.filter((x) => x.name !== name)
+    }
+
+    function apiCreateGame() {
+      api.post('/games/', game.value)
+        .catch((error: Error | AxiosError) => {
+          console.log(error.message)
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: `Error loading Games: ${error.message}`,
+            icon: 'report_problem'
+        })
+      })
     }
 
     return {
@@ -87,14 +106,12 @@ export default defineComponent({
       delPlayer,
       foundPlayer,
 
-      nameRules: [
-      ],
-
       onOKClick () {
-        onDialogOK()
+        if(game.value.name.length > 0) {
+          apiCreateGame()
+          onDialogOK()
+        }
       },
-
-      prompt: ref(false),
       onCancelClick: onDialogCancel
     }
   }

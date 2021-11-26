@@ -29,8 +29,6 @@ export default defineComponent({
     function openNewGameDialog() {
       $q.dialog({
         component: NewGameDialog,
-      }).onOk(() => {
-        console.log('OK')
       });
     }
     return { openNewGameDialog };
