@@ -7,17 +7,21 @@
         >
          <div v-ripple class="cursor-pointer q-hoverable">
          <span class="q-focus-helper" />
-          <q-card-section>
-            <div class="text-h6">{{ name }}</div>
-            <div class="text-subtitle2">{{ description }}</div>
-          </q-card-section>
-          <template v-if="players" class="row q-gutter-xs q-pd-xs">
-            <q-card-section class="row q-gutter-xs">
-              <template v-for="{id, name} in players" :key="id">
-                <q-badge color="dark" :label="name" />
-              </template>
+          <router-link class="router-link" :to="`/${id}/`">
+            <q-card-section>
+              <div class="text-h6">{{ name }}</div>
+              <div class="text-subtitle2">{{ description }}</div>
             </q-card-section>
-          </template>
+            <template v-if="players" class="row q-gutter-xs q-pd-xs">
+              <q-card-section class="row q-gutter-xs">
+                <template v-for="{id, name} in players" :key="id">
+                  <template v-if="id">
+                    <q-badge color="dark" :label="name" />
+                  </template>
+                </template>
+              </q-card-section>
+            </template>
+          </router-link>
          </div>
          <div class="bg-secondary">
           <q-separator dark />
@@ -28,6 +32,9 @@
         </q-card>
       </template>
     </div>
+    <q-page-sticky position="bottom-right" :offset="[24, 24]">
+      <q-btn fab icon="add" color="accent" @click="openNewGameDialog" />
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -37,6 +44,7 @@ import { defineComponent, ref } from 'vue';
 import { api } from 'boot/axios'
 import { useQuasar } from 'quasar'
 import { AxiosError } from 'axios';
+import NewGameDialog from '../components/NewGameDialog.vue'
 
 export default defineComponent({
   name: 'PageIndex',
@@ -44,7 +52,6 @@ export default defineComponent({
     const $q = useQuasar()
     const games = ref<Game[]>()
     var removedGame = <Game|undefined>{}
-
 
     function removeGameId(id: number) {
       if(games.value) {
@@ -61,7 +68,6 @@ export default defineComponent({
           games.value = response.data
         })
         .catch((error: Error | AxiosError) => {
-          console.log(error.message)
           $q.notify({
             color: 'negative',
             position: 'top',
@@ -72,7 +78,6 @@ export default defineComponent({
     }
 
     function apiDeleteGame(gameId: number) {
-      console.log('deleteGame():', gameId)
       void api.delete(`/games/${gameId}/`)
         .catch((error: Error | AxiosError) => {
           $q.notify({
@@ -87,6 +92,29 @@ export default defineComponent({
       })
     }
 
+    function apiCreateGame(game: Game) {
+      api.post('/games/', game)
+        .then(() => {
+          apiFetchGames()
+        })
+        .catch((error: Error | AxiosError) => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: `Error create game: ${error.message}`,
+            icon: 'report_problem'
+        })
+      })
+    }
+
+    function openNewGameDialog() {
+      $q.dialog({
+        component: NewGameDialog,
+      }).onOk((game: Game) => {
+        apiCreateGame(game)
+      });
+    }
+
     function deleteDialog(gameName: string, gameId: number) {
       $q.dialog({
         title: gameName,
@@ -98,12 +126,23 @@ export default defineComponent({
         apiDeleteGame(gameId)
       })
     }
-
-
-    return { apiFetchGames, apiDeleteGame, deleteDialog, games };
+    return {
+      apiFetchGames,
+      apiCreateGame,
+      apiDeleteGame,
+      openNewGameDialog,
+      deleteDialog,
+      games
+    }
   },
   created() {
     this.apiFetchGames()
   }
 });
 </script>
+
+<style lang="sass" scoped>
+.router-link
+  text-decoration: none
+  color: inherit
+</style>

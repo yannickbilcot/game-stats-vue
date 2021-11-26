@@ -52,11 +52,8 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { api } from 'boot/axios'
 import { useDialogPluginComponent } from 'quasar'
 import { Game, Player } from './models'
-import { useQuasar } from 'quasar'
-import { AxiosError } from 'axios';
 
 export default defineComponent({
   name: 'NewGameDialog',
@@ -65,7 +62,6 @@ export default defineComponent({
   ],
   setup() {
     const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-    const $q = useQuasar()
     const title = 'Create a new game'
     const player = ref('')
     const game = ref(<Game>{name: '', players: <Player[]>[]})
@@ -83,19 +79,6 @@ export default defineComponent({
       game.value.players = game.value.players.filter((x) => x.name !== name)
     }
 
-    function apiCreateGame() {
-      api.post('/games/', game.value)
-        .catch((error: Error | AxiosError) => {
-          console.log(error.message)
-          $q.notify({
-            color: 'negative',
-            position: 'top',
-            message: `Error loading Games: ${error.message}`,
-            icon: 'report_problem'
-        })
-      })
-    }
-
     return {
       title,
       game,
@@ -108,8 +91,7 @@ export default defineComponent({
 
       onOKClick () {
         if(game.value.name.length > 0) {
-          apiCreateGame()
-          onDialogOK()
+          onDialogOK(game.value)
         }
       },
       onCancelClick: onDialogCancel
