@@ -211,7 +211,8 @@ export default defineComponent({
         align: 'center',
         options: {
           chart: {
-            width: 320
+            width: 320,
+            height: 235
           },
           legend: {
             position: 'bottom'
