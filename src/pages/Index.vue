@@ -3,7 +3,7 @@
     <div v-if="games" class="column q-pa-md q-gutter-md">
       <template v-for="{id, name, description, players} in games" :key="id">
         <q-card class="text-white bg-secondary"
-          :style="$q.screen.xs ? 'width: 250px;' : 'width: 640px;'"
+          :style="$q.screen.xs ? 'width: 320px;' : 'width: 640px;'"
         >
          <div v-ripple class="cursor-pointer q-hoverable">
          <span class="q-focus-helper" />
@@ -26,7 +26,7 @@
          <div class="bg-secondary">
           <q-separator dark />
           <q-card-actions align="right">
-            <q-btn flat icon="delete" @click="deleteDialog(name, id)">Delete</q-btn>
+            <q-btn flat icon="delete" @click="deleteDialog(id, name)">Delete</q-btn>
           </q-card-actions>
          </div>
         </q-card>
@@ -51,14 +51,10 @@ export default defineComponent({
   setup() {
     const $q = useQuasar()
     const games = ref<Game[]>()
-    var removedGame = <Game|undefined>{}
 
     function removeGameId(id: number) {
       if(games.value) {
-        removedGame = games.value.find((el) => el.id === id)
-        if (removedGame) {
-          games.value = games.value.filter((x) => x.id !== id)
-        }
+        games.value = games.value.filter((x) => x.id !== id)
       }
     }
 
@@ -67,11 +63,15 @@ export default defineComponent({
         .then((response) => {
           games.value = response.data
         })
-        .catch((error: Error | AxiosError) => {
+        .catch((error: AxiosError) => {
+          let err: string = error.message
+          if(error.response?.data) {
+            err = <string>error.response?.data
+          }
           $q.notify({
             color: 'negative',
             position: 'top',
-            message: `Error loading Games: ${error.message}`,
+            message: err,
             icon: 'report_problem'
         })
       })
@@ -79,16 +79,18 @@ export default defineComponent({
 
     function apiDeleteGame(gameId: number) {
       void api.delete(`/games/${gameId}/`)
-        .catch((error: Error | AxiosError) => {
+        .catch((error: AxiosError) => {
+          let err: string = error.message
+          if(error.response?.data) {
+            err = <string>error.response?.data
+          }
           $q.notify({
             color: 'negative',
             position: 'top',
-            message: `Error delete Game: ${error.message}`,
+            message: err,
             icon: 'report_problem'
           })
-          if(removedGame) {
-            games.value?.push(removedGame)
-          }
+          apiFetchGames()
       })
     }
 
@@ -115,10 +117,10 @@ export default defineComponent({
       });
     }
 
-    function deleteDialog(gameName: string, gameId: number) {
+    function deleteDialog(gameId: number, gameName: string) {
       $q.dialog({
-        title: gameName,
-        message: 'Are you sure to delete this game?',
+        title: 'Delete Game',
+        message: `Are you sure to delete '${gameName}' game?`,
         cancel: true,
         persistent: true
       }).onOk(() => {

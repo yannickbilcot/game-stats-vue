@@ -19,7 +19,6 @@
           <q-input
             label="Description"
             v-model="game.description"
-            dense
           />
         </q-card-section>
 
@@ -30,7 +29,7 @@
             :rules="[val => (!foundPlayer(val)) || 'This player already exist']"
           >
             <template v-slot:append>
-              <q-btn type="submit" round dense flat icon="add" @click="addPlayer(player)" />
+              <q-btn type="submit" round flat icon="add" @click="addPlayer(player)" />
             </template>
           </q-input>
           </form>
