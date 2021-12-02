@@ -1,11 +1,7 @@
-
-export interface DateTime {
-  date: string
-}
 export interface Player {
   id: number;
   name: string;
-  stats: DateTime[]
+  stats: string[]
 }
 
 export interface Game {

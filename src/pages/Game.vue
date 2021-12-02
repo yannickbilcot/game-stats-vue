@@ -7,17 +7,16 @@
         :style="$q.screen.xs ? 'width: 320px; height: 320px' : 'width: 640px; height: 460px'"
       >
         <q-card-section class="q-pa-sm">
-          <q-btn-toggle
+          <q-tabs
+            align="left"
             v-model="chart"
-            flat
-            toggle-color="secondary"
             text-color="dark"
-            size="md"
-            :options="[
-              {label: 'Pie chart', value: 'pie'},
-              {label: 'Line chart', value: 'line'},
-            ]"
-          />
+            indicator-color="secondary"
+            dense
+          >
+            <q-tab name="pie" label="Pie Chart" />
+            <q-tab name="line" label="Line Chart" />
+          </q-tabs>
         </q-card-section>
         <q-card-section class="q-px-none justify-center">
           <template v-if="chart == 'pie'">
@@ -41,6 +40,21 @@
       </q-card>
     </div>
     <div v-if="game" class="column q-pa-md q-gutter-md">
+      <q-card flat bordered class="game-card text-dark"
+        :style="$q.screen.xs ? 'width: 320px;' : 'width: 640px;'"
+      >
+        <q-card-section class="q-py-none">
+          <q-item class="q-py-none">
+            <q-item-section>
+              <div class="text-subtitle2">{{ game.name }}</div>
+            </q-item-section>
+            <q-item-section avatar>
+                <div class="text-subtitle2 text-center q-pa-md"
+                 :style="$q.screen.xs ? 'width: 43px;' : 'width: 109px;'">{{ nbGames }}</div>
+            </q-item-section>
+          </q-item>
+        </q-card-section>
+      </q-card>
       <template v-for="{id, name} in game.players" :key="id">
         <template v-if="id">
           <q-card class="text-white bg-secondary"
@@ -54,8 +68,11 @@
                 <q-item-section>
                     <div class="text-subtitle2 text-center">{{ gamePlayersWins[name] }}</div>
                 </q-item-section>
-                <q-item-section align="right">
+                <q-item-section />
+                <q-item-section>
                   <q-btn class="full-height" flat square-icon icon="add" @click="openAddWinnerDialog(id, name)" />
+                </q-item-section>
+                <q-item-section>
                   <q-btn class="full-height" size="sm" flat square-icon icon="delete" @click="deleteDialog(id, name)" />
                 </q-item-section>
               </q-item>
@@ -74,7 +91,6 @@
 import {
   Game,
   Player,
-  DateTime,
   GamesWin,
   ApexTimestampSerie
 } from 'components/models';
@@ -96,8 +112,8 @@ export default defineComponent({
     const gameDatesTs = computed(() => {
       let datesArray = <number[]>[]
       game.value?.players.forEach((player) => {
-        const playerStats = player.stats.filter((x) => x.date !== null)
-        datesArray = _.union(datesArray, playerStats.map(({date}) => new Date(date).getTime()))
+        const playerStats = player.stats.filter((x) => x !== null)
+        datesArray = _.union(datesArray, playerStats.map((date) => new Date(date).getTime()))
       })
       datesArray = datesArray.sort((a,b)=> a - b)
       return datesArray
@@ -107,7 +123,7 @@ export default defineComponent({
       let playersStats = <ApexTimestampSerie[]>[]
       if(game.value?.id) {
         game.value.players.forEach((player) => {
-          let playerStats = <DateTime[]>Object.values({...player.stats})
+          let playerStats = <string[]>Object.values({...player.stats})
           let playerSerie = <ApexTimestampSerie>{
             name: player.name,
             data: []
@@ -115,7 +131,7 @@ export default defineComponent({
           let i = 0
           gameDatesTs.value.forEach((dateTs) => {
             if(playerStats.length > 0) {
-              const elem = playerStats[0].date
+              const elem = playerStats[0]
               if(elem) {
                 const statDateTs = new Date(elem).getTime()
                 if(statDateTs === dateTs) {
@@ -138,7 +154,7 @@ export default defineComponent({
         game.value.players.forEach((player) => {
           let i = 0
           player.stats.forEach((stat) => {
-            if(stat.date) {
+            if(stat) {
               i++
             }
           })
@@ -408,3 +424,8 @@ export default defineComponent({
   }
 });
 </script>
+
+<style lang="sass" scoped>
+.game-card
+  border: 1px solid $secondary
+</style>
