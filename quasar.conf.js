@@ -55,6 +55,11 @@ module.exports = configure(function (ctx) {
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
       vueRouterMode: 'history', // available values: 'hash', 'history'
+      env: {
+        API: ctx.dev
+          ? 'http://127.0.0.1:3000/api/v1'
+          : 'api/v1'
+      },
 
       // transpile: false,
       // publicPath: '/',
