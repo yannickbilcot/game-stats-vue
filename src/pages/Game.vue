@@ -49,7 +49,7 @@
               <div class="text-subtitle2">{{ game.name }}</div>
             </q-item-section>
             <q-item-section avatar>
-                <div class="text-subtitle2 text-center q-pa-md"
+                <div class="text-subtitle2 text-center q-px-md"
                  :style="$q.screen.xs ? 'width: 43px;' : 'width: 109px;'">{{ nbGames }}</div>
             </q-item-section>
           </q-item>
