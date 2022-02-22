@@ -12,10 +12,11 @@
             v-model="chart"
             text-color="dark"
             indicator-color="secondary"
+            inline-label
             dense
           >
-            <q-tab name="pie" label="Pie Chart" />
-            <q-tab name="line" label="Line Chart" />
+            <q-tab name="pie" label="Pie Chart" icon="pie_chart" />
+            <q-tab name="line" label="Line Chart" icon="show_chart" />
           </q-tabs>
         </q-card-section>
         <q-card-section class="q-px-none justify-center">
@@ -123,7 +124,8 @@ export default defineComponent({
       let playersStats = <ApexTimestampSerie[]>[]
       if(game.value?.id) {
         game.value.players.forEach((player) => {
-          let playerStats = <string[]>Object.values({...player.stats})
+          const stats = <string[]>Object.values({...player.stats})
+          let playerStats = stats.map((date) => new Date(date).getTime()).sort((a,b)=> a - b)
           let playerSerie = <ApexTimestampSerie>{
             name: player.name,
             data: []
@@ -131,13 +133,9 @@ export default defineComponent({
           let i = 0
           gameDatesTs.value.forEach((dateTs) => {
             if(playerStats.length > 0) {
-              const elem = playerStats[0]
-              if(elem) {
-                const statDateTs = new Date(elem).getTime()
-                if(statDateTs === dateTs) {
-                  i++
-                  playerStats.shift()
-                }
+              if(playerStats[0] === dateTs) {
+                i++
+                playerStats.shift()
               }
             }
             playerSerie.data.push([dateTs, i])
