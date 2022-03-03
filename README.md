@@ -1,6 +1,8 @@
 # Game Stats App (game-stats-vue)
 
-A Quasar frontend for game-stats-api
+A Quasar frontend for [game-stats-api](https://github.com/yannickbilcot/game-stats-api)
+
+* Demo: https://game-stats-demo.herokuapp.com
 
 ## Install the dependencies
 ```bash
